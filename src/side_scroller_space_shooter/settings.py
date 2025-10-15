@@ -9,7 +9,7 @@ class GameSettings:
         self.bg_image = "assets/background.png"
         self.scroll_speed = 1
 
-        # Other
+        # FPS
         self.fps = 60
 
 class PlayerSettings:
@@ -22,3 +22,10 @@ class PlayerSettings:
         self.bullet_width, self.bullet_height = 4, 4
         self.bullet_color = (233, 255, 26)
         self.fire_rate = 250
+
+class AsteroidSettings:
+    """Asteroid settings"""
+    def __init__(self):
+        self.sprite_img = "assets/asteroid.png"
+        self.speed = 2
+        self.cooldown = 1200

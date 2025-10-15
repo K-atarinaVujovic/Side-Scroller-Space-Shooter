@@ -1,21 +1,25 @@
 import pygame
 from pygame.sprite import Sprite
 
-POS_X = 100
-POS_Y = 100
+MARGIN = 25
 
 class AbstractSpaceship(Sprite):
     """Abstract class for managing spaceships"""
     def __init__(self, screen, settings):
+        """Initialize spaceship"""
         super().__init__()
         self.screen_rect = screen.get_rect()
         self.settings = settings
 
-        # Draw ship
         self.speed = self.settings.speed
+
+        # Initialize spaceship    
         self.image = pygame.image.load(self.settings.sprite_img).convert_alpha()
         self.rect = self.image.get_rect()
-        self.rect.center = (POS_X, POS_Y)
+
+        # Position spaceship
+        self.rect.x = MARGIN
+        self.rect.centery = self.screen_rect.centery
 
         # Hitbox
         self.mask = pygame.mask.from_surface(self.image)

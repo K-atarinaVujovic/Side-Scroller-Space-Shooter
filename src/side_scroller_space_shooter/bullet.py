@@ -2,7 +2,7 @@ import pygame
 from pygame.sprite import Sprite
 
 class AbstractBullet(Sprite):
-    """Class for managing"""
+    """Class for managing bullets"""
     
     def __init__(self, screen, settings, shooter_rect):
         super().__init__()
