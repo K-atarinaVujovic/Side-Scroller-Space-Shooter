@@ -11,10 +11,14 @@ class AbstractSpaceship(Sprite):
         self.screen_rect = screen.get_rect()
         self.settings = settings
 
+        # Draw ship
         self.speed = self.settings.speed
         self.image = pygame.image.load(self.settings.sprite_img).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = (POS_X, POS_Y)
+
+        # Hitbox
+        self.mask = pygame.mask.from_surface(self.image)
 
         # Movement flags
         self.moving_right = False
@@ -22,28 +26,35 @@ class AbstractSpaceship(Sprite):
         self.moving_up = False
         self.moving_down = False
 
-        # Spaceship position
-        self.pos_x, self.pos_y = float(POS_X), float(POS_Y)
+        # Bullet 
+        self.shoot = False
+        self.fire_rate = settings.fire_rate
+        self.bullet_cooldown = 0
         
     def _move_spaceship(self):
         """Update spaceship position"""
+        pos_x = self.rect.x
+        pos_y = self.rect.y
+
         if self.moving_right and self.rect.right < self.screen_rect.right:
-            self.pos_x += self.speed
+            pos_x += self.speed
         if self.moving_left and self.rect.left > self.screen_rect.left:
-            self.pos_x -= self.speed
+            pos_x -= self.speed
         if self.moving_up and self.rect.top > self.screen_rect.top:
-            self.pos_y -= self.speed
+            pos_y -= self.speed
         if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
-            self.pos_y += self.speed
+            pos_y += self.speed
 
 
         # Update rect
-        self.rect.x = self.pos_x
-        self.rect.y = self.pos_y
+        self.rect.x = pos_x
+        self.rect.y = pos_y
 
-    def update(self):
+    def update(self, dt):
         """Update spaceship"""
         self._move_spaceship()
+        if self.bullet_cooldown > 0:
+            self.bullet_cooldown -= dt
         
 
 class PlayerSpaceship(AbstractSpaceship):
@@ -57,3 +68,5 @@ class PlayerSpaceship(AbstractSpaceship):
         self.moving_left = keys[pygame.K_LEFT]
         self.moving_up = keys[pygame.K_UP]
         self.moving_down = keys[pygame.K_DOWN]
+
+        self.shoot = keys[pygame.K_SPACE]
