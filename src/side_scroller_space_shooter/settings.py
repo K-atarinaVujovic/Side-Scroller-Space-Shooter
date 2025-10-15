@@ -1,3 +1,5 @@
+from pygame import font
+
 class GameSettings:
     """Game settings"""
 
@@ -8,6 +10,10 @@ class GameSettings:
         self.screen_height = 360
         self.bg_image = "assets/background.png"
         self.scroll_speed = 1
+
+        # Text
+        self.default_font = font.SysFont("Arial", 30)
+        self.default_font_color = (255, 255, 255)
 
         # FPS
         self.fps = 60

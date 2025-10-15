@@ -38,6 +38,9 @@ class Game:
         # Asteroid generation variables
         self.asteroid_cooldown = self.asteroid_settings.cooldown
 
+        # Game stats
+        self.score = 0
+
         # Initialize managers
         self.sprites = SpriteManager(self)
         self.draw = DrawManager(self)
@@ -56,20 +59,23 @@ class Game:
 
             keys = pygame.key.get_pressed()
 
-            # Update game state according to player actions
-            self.update_game_state(keys)
+            # Reset if R was pressed
+            if keys[pygame.K_r]:
+                self.reset()
+
+            if not self.game_over:
+                # Update game state according to player actions
+                self.update_game_state(keys)           
 
             # Handle game over
             if self.game_over:
-                self.reset()
+                self.draw.draw_text("Game over", self.screen.get_rect().centerx, self.screen.get_rect().centery, True)
+
+            pygame.display.update()
 
 
     def update_game_state(self, keys):
         """Call functions to handle all logic needed"""
-        # Reset if R was pressed
-        if keys[pygame.K_r]:
-            self.reset()
-
         # Time passed since last frame
         self.dt = self.clock.tick(self.settings.fps)
 
