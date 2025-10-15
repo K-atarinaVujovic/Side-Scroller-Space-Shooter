@@ -19,14 +19,16 @@ class CollisionManager:
     
 
     def _check_player_asteroid_collision(self):
+        """Check if player collided with an asteroid"""
         if pygame.sprite.spritecollide(self.player_sprite, self.asteroid_sprites, False, pygame.sprite.collide_rect):
             if pygame.sprite.spritecollide(self.player_sprite, self.asteroid_sprites, False, pygame.sprite.collide_mask):
                 self.game.game_over = True
                 print("Asteroid collision!")
 
     def _check_bullet_asteroid_collision(self):
+        """Check if player's bullet collided with an asteroid"""
         for bullet in self.player_bullets:
             if pygame.sprite.spritecollide(bullet, self.asteroid_sprites, False, pygame.sprite.collide_rect):
-                if pygame.sprite.spritecollide(bullet, self.asteroid_sprites, False, pygame.sprite.collide_mask):
-                    print("Bullet collision!")
+                if pygame.sprite.spritecollide(bullet, self.asteroid_sprites, True, pygame.sprite.collide_mask):
+                    self.player_bullets.remove(bullet)
     
