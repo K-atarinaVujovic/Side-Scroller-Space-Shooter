@@ -59,9 +59,17 @@ class Game:
             # Update game state according to player actions
             self.update_game_state(keys)
 
+            # Handle game over
+            if self.game_over:
+                self.reset()
+
 
     def update_game_state(self, keys):
         """Call functions to handle all logic needed"""
+        # Reset if R was pressed
+        if keys[pygame.K_r]:
+            self.reset()
+
         # Time passed since last frame
         self.dt = self.clock.tick(self.settings.fps)
 
@@ -83,6 +91,14 @@ class Game:
         # Draw
         self.draw.draw()     
   
+    def reset(self):
+        self.player_sprite.reset()
+        self.asteroid_cooldown = self.asteroid_settings.cooldown
+        self.game_over = False
+
+        # Empty sprite groups
+        self.player_bullets.empty()
+        self.asteroid_sprites.empty()
 
 
     def _update_cooldowns(self):

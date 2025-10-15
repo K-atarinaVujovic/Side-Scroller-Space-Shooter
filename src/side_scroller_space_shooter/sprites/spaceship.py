@@ -18,8 +18,7 @@ class AbstractSpaceship(Sprite):
         self.rect = self.image.get_rect()
 
         # Position spaceship
-        self.rect.x = MARGIN
-        self.rect.centery = self.screen_rect.centery
+        self.init_position()
 
         # Hitbox
         self.mask = pygame.mask.from_surface(self.image)
@@ -59,7 +58,17 @@ class AbstractSpaceship(Sprite):
         self._move_spaceship()
         if self.bullet_cooldown > 0:
             self.bullet_cooldown -= dt
-        
+
+    def reset(self):
+        """Reset position and stats"""
+        self.init_position()
+        self.bullet_cooldown = 0
+
+    def init_position(self):
+        """Position spaceship to initial position"""
+        pass
+
+    
 
 class PlayerSpaceship(AbstractSpaceship):
     """Class for managing player spaceship"""
@@ -74,3 +83,8 @@ class PlayerSpaceship(AbstractSpaceship):
         self.moving_down = keys[pygame.K_DOWN]
 
         self.shoot = keys[pygame.K_SPACE]
+
+    def init_position(self):
+        """Position player spaceship to starting position"""
+        self.rect.x = MARGIN
+        self.rect.centery = self.screen_rect.centery

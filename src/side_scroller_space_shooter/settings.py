@@ -4,7 +4,7 @@ class GameSettings:
     def __init__(self):
         """Init game settings"""
         # Screen
-        self.screen_width = 800
+        self.screen_width = 500
         self.screen_height = 360
         self.bg_image = "assets/background.png"
         self.scroll_speed = 1
