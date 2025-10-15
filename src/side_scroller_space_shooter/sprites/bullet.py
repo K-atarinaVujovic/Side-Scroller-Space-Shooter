@@ -12,12 +12,19 @@ class AbstractBullet(Sprite):
         self.width = settings.bullet_width
         self.height = settings.bullet_height
 
-        # Create bullet
+        # Initialize bullet
+        self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.image.fill(self.color)
+        self.rect = self.image.get_rect()
+
+        # Position bullet
         (pos_x, pos_y) = shooter_rect.midright
         pos_x -= 6
         pos_y += 1
-        self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = (pos_x, pos_y)      
+
+        # Hitbox
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         """Progress the bullet"""
