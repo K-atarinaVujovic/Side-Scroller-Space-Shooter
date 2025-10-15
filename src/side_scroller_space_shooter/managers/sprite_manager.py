@@ -3,7 +3,7 @@ from sprites.bullet import PlayerBullet
 from sprites.asteroid import Asteroid
 
 class SpriteManager:
-    """Manages updating sprites, spawning sprites, and collision"""
+    """Manages updating and spawning sprites"""
     def __init__(self, game):
         self.game = game
 
@@ -34,17 +34,7 @@ class SpriteManager:
         self.player_bullets.update()
         self.asteroid_sprites.update()
 
-    def check_collisions(self):
-        """Check for collisions and handle game state consequences"""
-        # Player and asteroid
-        if pygame.sprite.spritecollide(self.player_sprite, self.asteroid_sprites, False, pygame.sprite.collide_rect):
-            if pygame.sprite.spritecollide(self.player_sprite, self.asteroid_sprites, False, pygame.sprite.collide_mask):
-                self.game.game_over = True
-                print("Asteroid collision!")
-
         self._clean_up()
-
-
 
     def _spawn_player_bullet(self):
         """Add player bullet sprite and reset cooldown"""

@@ -8,6 +8,7 @@ from sprites.bullet import PlayerBullet
 from sprites.asteroid import Asteroid
 from managers.sprite_manager import SpriteManager
 from managers.draw_manager import DrawManager
+from managers.collision_manager import CollisionManager
 
 class Game:
     """Class that runs the game"""
@@ -40,6 +41,7 @@ class Game:
         # Initialize managers
         self.sprites = SpriteManager(self)
         self.draw = DrawManager(self)
+        self.collision = CollisionManager(self)
 
     def run(self):
         """Start game loop"""
@@ -67,7 +69,7 @@ class Game:
         self._update_cooldowns()
 
         # Check for collisions
-        self.sprites.check_collisions()
+        self.collision.check_collisions()
 
         # Handle input
         self.player_sprite.handle_input(keys)
@@ -82,7 +84,7 @@ class Game:
         self.draw.draw()     
   
 
-  
+
     def _update_cooldowns(self):
         # Update cooldowns
         if self.asteroid_cooldown > 0:          
