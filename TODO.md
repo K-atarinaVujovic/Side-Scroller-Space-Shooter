@@ -1,3 +1,4 @@
-- Remove diagonal movement?
-- Change sizes or speeds? Speed up player?
-- Make bullets longer
+- Lower player fire rate
+- FIx enemy movement
+- Asteroid dont die!
+- Menu :3

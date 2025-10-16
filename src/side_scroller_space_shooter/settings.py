@@ -26,7 +26,7 @@ class PlayerSettings:
         self.speed = 5
 
         self.bullet_speed = 5
-        self.bullet_width, self.bullet_height = 4, 4
+        self.bullet_width, self.bullet_height = 30, 4
         self.bullet_color = (233, 255, 26)
         self.fire_rate = 250
 
@@ -38,7 +38,7 @@ class EnemySettings:
         self.speed = 2
 
         self.bullet_speed = 5
-        self.bullet_width, self.bullet_height = 4, 4
+        self.bullet_width, self.bullet_height = 20, 4
         self.bullet_color = (255, 102, 102)
 
     def calculate_spawn_cooldown(self):

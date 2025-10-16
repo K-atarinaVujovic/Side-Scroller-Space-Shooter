@@ -3,6 +3,14 @@ from sprites.bullet import PlayerBullet, EnemyBullet
 from sprites.asteroid import Asteroid
 from sprites.spaceship import EnemySpaceship
 
+# import os
+# import sys
+# import inspect
+
+# # currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# sys.path.insert(1, os.path.join(sys.path[0], '..'))
+
+
 class SpriteManager:
     """Manages updating and spawning sprites"""
     def __init__(self, game):
@@ -27,6 +35,7 @@ class SpriteManager:
         # Check if player fired a bullet
         if self.player_sprite.shoot and self.player_sprite.bullet_cooldown <= 0:
             self._spawn_bullet(PlayerBullet, self.player_sprite.rect)
+            self.player_sprite.bullet_cooldown = self.player_settings.fire_rate
 
         # Check if an enemy fired a bullet
         for enemy in self.enemy_sprites:
@@ -38,7 +47,7 @@ class SpriteManager:
         if self.game.asteroid_spawn_cooldown <= 0:
             self._spawn_asteroid()
 
-        # Check if it's time to generate a new enemy
+        # # Check if it's time to generate a new enemy
         if self.game.enemy_spawn_cooldown <= 0:
             self._spawn_enemy()
 
