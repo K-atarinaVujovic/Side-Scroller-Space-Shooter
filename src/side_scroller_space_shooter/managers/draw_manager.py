@@ -6,14 +6,22 @@ class DrawManager:
     def __init__(self, game):
         self.game = game
 
-        # Imported from game
+        # Screen and settings
         self.scroll_speed = game.settings.scroll_speed
         self.screen = game.screen
         self.screen_rect = self.screen.get_rect()
-        self.player_bullets = game.player_bullets
-        self.asteroid_sprites = game.asteroid_sprites
-        self.player_sprites = game.player_sprites
         self.settings = game.settings
+
+        # Player
+        self.player_bullets = game.player_bullets
+        self.player_sprites = game.player_sprites
+
+        # Asteroids
+        self.asteroid_sprites = game.asteroid_sprites
+
+        # Enemies
+        self.enemy_sprites = game.enemy_sprites
+        self.enemy_bullets = game.enemy_bullets
 
         # Background        
         self.bg = pygame.image.load(self.settings.bg_image).convert_alpha()
@@ -55,12 +63,23 @@ class DrawManager:
         """Draw score on screen"""
         self.draw_text(f"{self.game.score}", x, y)
 
+    def draw_game_over(self):
+        self.draw_text("Game over", self.screen.get_rect().centerx, self.screen.get_rect().centery, True, (153, 0, 0))
+        
+
     def _draw_sprites(self):
         """Draw sprites"""
+        # Player
         for bullet in self.player_bullets:
             bullet.draw()          
         self.player_sprites.draw(self.screen)
+
+        # Asteroids
         self.asteroid_sprites.draw(self.screen)
+
+        # Enemies
+        self.enemy_sprites.draw(self.screen)
+        self.enemy_bullets.draw(self.screen)
     
     def _draw_background(self):
         """Draw background"""

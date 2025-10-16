@@ -1,0 +1,2 @@
+- Remove diagonal movement?
+- Change sizes or speeds?

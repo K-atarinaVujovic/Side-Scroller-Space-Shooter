@@ -1,6 +1,7 @@
 import pygame
-from sprites.bullet import PlayerBullet
+from sprites.bullet import PlayerBullet, EnemyBullet
 from sprites.asteroid import Asteroid
+from sprites.spaceship import EnemySpaceship
 
 class SpriteManager:
     """Manages updating and spawning sprites"""
@@ -12,55 +13,87 @@ class SpriteManager:
         self.player_sprites = game.player_sprites
         self.player_bullets = game.player_bullets
         self.asteroid_sprites = game.asteroid_sprites
+        self.enemy_sprites = game.enemy_sprites
+        self.enemy_bullets = game.enemy_bullets
 
         # Screen and settings
         self.screen = game.screen
         self.player_settings = game.player_settings
         self.asteroid_settings = game.asteroid_settings
+        self.enemy_settings = game.enemy_settings
 
     def check_spawns(self):
         """Check if a game object needs to be spawned"""
         # Check if player fired a bullet
         if self.player_sprite.shoot and self.player_sprite.bullet_cooldown <= 0:
-            self._spawn_player_bullet()
+            self._spawn_bullet(PlayerBullet, self.player_sprite.rect)
+
+        # Check if an enemy fired a bullet
+        for enemy in self.enemy_sprites:
+            if enemy.shoot:
+                self._spawn_bullet(EnemyBullet, enemy.rect)
+                enemy.shoot = False
 
         # Check if it's time to generate a new asteroid
-        if self.game.asteroid_cooldown <= 0:
+        if self.game.asteroid_spawn_cooldown <= 0:
             self._spawn_asteroid()
+
+        # Check if it's time to generate a new enemy
+        if self.game.enemy_spawn_cooldown <= 0:
+            self._spawn_enemy()
+
+
 
     def update(self):
         """Update sprites and remove out-of-bounds sprites"""
+        # Player
         self.player_sprites.update(self.game.dt)
         self.player_bullets.update()
+
+        # Asteroids
         self.asteroid_sprites.update()
+
+        # Enemies
+        self.enemy_sprites.update(self.game.dt)
+        self.enemy_bullets.update()
 
         self._clean_up()
 
-    def _spawn_player_bullet(self):
-        """Add player bullet sprite and reset cooldown"""
-        new_bullet = PlayerBullet(self.screen, self.player_settings, self.player_sprite.rect)
-        self.player_bullets.add(new_bullet)
-        self.player_sprite.bullet_cooldown = self.player_sprite.fire_rate
+    def _spawn_bullet(self, bullet_class, shooter_rect):
+        """Spawn player bullet sprite and reset cooldown"""     
+        group = None
+        settings = None
+        if(bullet_class == PlayerBullet):
+            group = self.player_bullets
+            settings = self.player_settings
+        else:
+            group = self.enemy_bullets
+            settings = self.enemy_settings
+
+        new_bullet = bullet_class(self.screen, settings, shooter_rect)
+        group.add(new_bullet)
 
     def _spawn_asteroid(self):
-        """Add asteroid and reset cooldown"""
+        """Spawn asteroid and reset cooldown"""
         new_asteroid = Asteroid(self.screen, self.asteroid_settings)
         self.asteroid_sprites.add(new_asteroid)
-        self.game.asteroid_cooldown = self.asteroid_settings.cooldown
+        self.game.asteroid_spawn_cooldown = self.asteroid_settings.spawn_cooldown
+
+    def _spawn_enemy(self):
+        """Spawn enemy"""
+        new_enemy = EnemySpaceship(self.screen, self.enemy_settings)
+        self.enemy_sprites.add(new_enemy)
+        self.game.enemy_spawn_cooldown = self.enemy_settings.calculate_spawn_cooldown()
 
     def _clean_up(self):
         """Cleans up sprites out of bounds"""
-        self._clean_up_bullets()
-        self._clean_up_asteroids()
+        self._clean_up_group(self.player_bullets)
+        self._clean_up_group(self.asteroid_sprites)
+        self._clean_up_group(self.enemy_sprites)
+        self._clean_up_group(self.enemy_bullets)
 
-    def _clean_up_bullets(self):
-        """Clean up bullets out of bounds"""
-        for bullet in self.player_bullets:
-            if(bullet.rect.x > self.screen.get_rect().right):
-                self.player_bullets.remove(bullet)
-
-    def _clean_up_asteroids(self):
-        """Clean up asteroids out of bounds"""
-        for asteroid in self.asteroid_sprites:
-            if(asteroid.rect.x > self.screen.get_rect().right):
-                self.asteroid_sprites.remove(asteroid)
+    def _clean_up_group(self, group):
+        """Cleans up sprites in group out of bounds"""
+        for sprite in group:
+            if(sprite.rect.x > self.screen.get_rect().right):
+                group.remove(sprite)

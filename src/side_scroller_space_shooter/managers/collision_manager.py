@@ -5,29 +5,55 @@ class CollisionManager:
     def __init__(self, game):
         self.game = game
 
-        # Sprites
+        # == SPRITES ==
+        # Player
         self.player_sprite = game.player_sprite
         self.player_sprites = game.player_sprites
         self.player_bullets = game.player_bullets
+
+        # Asteroids
         self.asteroid_sprites = game.asteroid_sprites
+
+        # Enemies
+        self.enemy_sprites = game.enemy_sprites
+        self.enemy_bullets = game.enemy_bullets
+
 
     def check_collisions(self):
         """Check for collisions and handle game state consequences"""
-        self._check_player_asteroid_collision()
-        self._check_bullet_asteroid_collision()
+        has_player_collided_asteroid = self._check_player_to_group_collision(self.asteroid_sprites)
+        has_player_collided_enemy = self._check_player_to_group_collision(self.enemy_sprites)
+        has_player_collided_bullet = self._check_player_to_group_collision(self.enemy_bullets)
+        shot_asteroid = self._check_group_to_group_collision(self.player_bullets, self.asteroid_sprites)
+        shot_enemy = self._check_group_to_group_collision(self.player_bullets, self.enemy_sprites)
 
+
+        if has_player_collided_asteroid or has_player_collided_enemy or has_player_collided_bullet:
+            self.game.game_over = True
+
+        if shot_asteroid:
+            self.asteroid_sprites.remove(shot_asteroid)
+
+        if shot_enemy:
+            self.enemy_sprites.remove(shot_enemy)
+            self.game.score += 5
     
-
-    def _check_player_asteroid_collision(self):
-        """Check if player collided with an asteroid"""
-        if pygame.sprite.spritecollide(self.player_sprite, self.asteroid_sprites, False, pygame.sprite.collide_rect):
-            if pygame.sprite.spritecollide(self.player_sprite, self.asteroid_sprites, False, pygame.sprite.collide_mask):
-                self.game.game_over = True
-
-    def _check_bullet_asteroid_collision(self):
-        """Check if player's bullet collided with an asteroid"""
-        for bullet in self.player_bullets:
-            if pygame.sprite.spritecollide(bullet, self.asteroid_sprites, False, pygame.sprite.collide_rect):
-                if pygame.sprite.spritecollide(bullet, self.asteroid_sprites, True, pygame.sprite.collide_mask):
-                    self.player_bullets.remove(bullet)
+    def _check_player_to_group_collision(self, group):
+        """Check if player collided with a sprite from the group"""
+        if pygame.sprite.spritecollide(self.player_sprite, group, False, pygame.sprite.collide_rect):
+            if pygame.sprite.spritecollide(self.player_sprite, group, False, pygame.sprite.collide_mask):
+                return True
+            
+        return False
     
+    def _check_group_to_group_collision(self, group_1, group_2):
+        """Check if any of the bullets collided with a sprite from the group
+        
+        Returns collided sprite from group_2 if there was a collision, else None.
+        """
+        for sprite in group_2:
+            if pygame.sprite.spritecollide(sprite, group_1, False, pygame.sprite.collide_rect):
+                if pygame.sprite.spritecollide(sprite, group_1, True, pygame.sprite.collide_mask):
+                    return sprite
+                
+        return None

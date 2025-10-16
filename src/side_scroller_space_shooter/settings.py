@@ -1,4 +1,5 @@
 from pygame import font
+import random
 
 class GameSettings:
     """Game settings"""
@@ -29,9 +30,26 @@ class PlayerSettings:
         self.bullet_color = (233, 255, 26)
         self.fire_rate = 250
 
+class EnemySettings:
+    """Enemy settings"""
+
+    def __init__(self):
+        self.sprite_img = "assets/enemy.png"
+        self.speed = 2
+
+        self.bullet_speed = 5
+        self.bullet_width, self.bullet_height = 4, 4
+        self.bullet_color = (255, 102, 102)
+
+    def calculate_spawn_cooldown(self):
+        return random.randint(2000, 4000)
+    
+    def calculate_bullet_cooldown(self):
+        return random.randint(700, 1000)
+
 class AsteroidSettings:
     """Asteroid settings"""
     def __init__(self):
         self.sprite_img = "assets/asteroid.png"
         self.speed = 2
-        self.cooldown = 1200
+        self.spawn_cooldown = 1200

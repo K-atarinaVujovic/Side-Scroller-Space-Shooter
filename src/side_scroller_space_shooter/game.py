@@ -2,7 +2,7 @@ import pygame
 import math
 import sys
 
-from settings import GameSettings, PlayerSettings, AsteroidSettings
+from settings import GameSettings, PlayerSettings, AsteroidSettings, EnemySettings
 from sprites.spaceship import PlayerSpaceship
 from sprites.bullet import PlayerBullet
 from sprites.asteroid import Asteroid
@@ -23,6 +23,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         self.player_settings = PlayerSettings()
         self.asteroid_settings = AsteroidSettings()
+        self.enemy_settings = EnemySettings()
         
         self.game_over = False
         self.dt = 0       
@@ -35,8 +36,13 @@ class Game:
         # Asteroid sprites
         self.asteroid_sprites = pygame.sprite.Group()
 
-        # Asteroid generation variables
-        self.asteroid_cooldown = self.asteroid_settings.cooldown
+        # Enemy sprites
+        self.enemy_sprites = pygame.sprite.Group()
+        self.enemy_bullets = pygame.sprite.Group()
+
+        # Spawn cooldowns
+        self.asteroid_spawn_cooldown = self.asteroid_settings.spawn_cooldown
+        self.enemy_spawn_cooldown = self.enemy_settings.calculate_spawn_cooldown()
 
         # Game stats
         self.score = 0
@@ -69,7 +75,7 @@ class Game:
 
             # Handle game over
             if self.game_over:
-                self.draw.draw_text("Game over", self.screen.get_rect().centerx, self.screen.get_rect().centery, True)
+                self.draw.draw_game_over()
 
             pygame.display.update()
 
@@ -80,7 +86,7 @@ class Game:
         self.dt = self.clock.tick(self.settings.fps)
 
         # Update cooldowns
-        self._update_cooldowns()
+        self._update_spawn_cooldowns()
 
         # Check for collisions
         self.collision.check_collisions()
@@ -98,16 +104,26 @@ class Game:
         self.draw.draw()     
   
     def reset(self):
+        """Reset game"""
         self.player_sprite.reset()
-        self.asteroid_cooldown = self.asteroid_settings.cooldown
+        self.asteroid_spawn_cooldown = self.asteroid_settings.spawn_cooldown
         self.game_over = False
+        self.score = 0
 
         # Empty sprite groups
         self.player_bullets.empty()
         self.asteroid_sprites.empty()
+        self.enemy_bullets.empty()
+        self.enemy_sprites.empty()
 
 
-    def _update_cooldowns(self):
-        # Update cooldowns
-        if self.asteroid_cooldown > 0:          
-            self.asteroid_cooldown -= self.dt
+    def _update_spawn_cooldowns(self):
+        """Update spawn cooldowns"""
+        # Update asteroid spawn cooldown
+        if self.asteroid_spawn_cooldown > 0:          
+            self.asteroid_spawn_cooldown -= self.dt
+
+        # Update enemy spawn cooldown
+        if self.enemy_spawn_cooldown > 0:
+            self.enemy_spawn_cooldown -= self.dt
+        
