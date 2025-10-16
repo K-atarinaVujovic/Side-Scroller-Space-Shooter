@@ -28,7 +28,7 @@ class PlayerSettings:
         self.bullet_speed = 5
         self.bullet_width, self.bullet_height = 30, 4
         self.bullet_color = (233, 255, 26)
-        self.fire_rate = 250
+        self.fire_rate = 400
 
 class EnemySettings:
     """Enemy settings"""
