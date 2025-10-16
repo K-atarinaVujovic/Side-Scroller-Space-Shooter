@@ -77,6 +77,9 @@ class Game:
             if self.game_over:
                 self.draw.draw_game_over()
 
+            else:
+                self.draw_next_frame()
+
             pygame.display.update()
 
 
@@ -99,10 +102,11 @@ class Game:
 
         # Update sprites    
         self.sprites.update()
-
+ 
+    def draw_next_frame(self):
         # Draw
-        self.draw.draw()     
-  
+        self.draw.draw()
+
     def reset(self):
         """Reset game"""
         self.player_sprite.reset()

@@ -69,7 +69,7 @@ class Environment(gym.Env):
 
 
     def _get_info():
-        """Get info, unused"""
+        """Get info, NOT IMPLEMENTED"""
         return {}
 
     def _get_obs(self):
