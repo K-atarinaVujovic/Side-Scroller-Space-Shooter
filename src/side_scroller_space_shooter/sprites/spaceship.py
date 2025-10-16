@@ -145,7 +145,7 @@ class EnemySpaceship(AbstractSpaceship):
         """Update enemy spaceship"""
 
         # Update direction
-        if self.rect.top <= MARGIN or self.rect.bottom >= self.screen_rect.bottom - MARGIN or self.direction_cooldown == 0:
+        if self.rect.top <= MARGIN or self.rect.bottom >= self.screen_rect.bottom - MARGIN or self.direction_cooldown <= 0:
             self._toggle_direction()
 
         if self.direction_cooldown > 0:
@@ -177,5 +177,5 @@ class EnemySpaceship(AbstractSpaceship):
 
     def _reset_direction_cooldown(self):
         """Reset direction cooldown to random amount of time"""
-        self.direction_cooldown = random.randint(300, 500)
+        self.direction_cooldown = self.settings.calculate_direction_cooldown()
 

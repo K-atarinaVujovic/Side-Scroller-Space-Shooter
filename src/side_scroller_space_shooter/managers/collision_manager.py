@@ -21,18 +21,20 @@ class CollisionManager:
 
     def check_collisions(self):
         """Check for collisions and handle game state consequences"""
+        # Check if player collided with an asteroid
         has_player_collided_asteroid = self._check_player_to_group_collision(self.asteroid_sprites)
+        # Check if player collided with an enemy
         has_player_collided_enemy = self._check_player_to_group_collision(self.enemy_sprites)
+        # Check if player was shot
         has_player_collided_bullet = self._check_player_to_group_collision(self.enemy_bullets)
+        # Check if player shot an asteroid and remove the bullet
         shot_asteroid = self._check_group_to_group_collision(self.player_bullets, self.asteroid_sprites)
+        # Check if player shot an enemy and remove the bullet
         shot_enemy = self._check_group_to_group_collision(self.player_bullets, self.enemy_sprites)
 
-
+        
         if has_player_collided_asteroid or has_player_collided_enemy or has_player_collided_bullet:
             self.game.game_over = True
-
-        if shot_asteroid:
-            self.asteroid_sprites.remove(shot_asteroid)
 
         if shot_enemy:
             self.enemy_sprites.remove(shot_enemy)

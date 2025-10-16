@@ -1,4 +1,1 @@
-- Lower player fire rate
-- FIx enemy movement
-- Asteroid dont die!
 - Menu :3

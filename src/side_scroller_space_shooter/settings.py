@@ -23,7 +23,7 @@ class PlayerSettings:
     """Player settings"""
     def __init__(self):
         self.sprite_img = "assets/ship.png"
-        self.speed = 5
+        self.speed = 6
 
         self.bullet_speed = 5
         self.bullet_width, self.bullet_height = 30, 4
@@ -46,10 +46,13 @@ class EnemySettings:
     
     def calculate_bullet_cooldown(self):
         return random.randint(700, 1000)
+    
+    def calculate_direction_cooldown(self):
+        return random.randint(400, 3000)
 
 class AsteroidSettings:
     """Asteroid settings"""
     def __init__(self):
         self.sprite_img = "assets/asteroid.png"
         self.speed = 2
-        self.spawn_cooldown = 1200
+        self.spawn_cooldown = 1500
