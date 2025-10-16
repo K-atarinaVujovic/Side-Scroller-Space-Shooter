@@ -63,9 +63,6 @@ class PlayerSpaceship(AbstractSpaceship):
         self.moving_down = keys[pygame.K_DOWN]
 
         self.shoot = keys[pygame.K_SPACE]
-        if(self.shoot):
-            print("SHOOT")
-            print("Cooldown:",self.bullet_cooldown)
 
     def reset(self):
         """Reset position and stats"""
@@ -76,9 +73,6 @@ class PlayerSpaceship(AbstractSpaceship):
         self.move_spaceship()
         if self.bullet_cooldown > 0:
             self.bullet_cooldown -= dt
-        
-        # if self.shoot and self.bullet_cooldown <= 0:
-        #     self.bullet_cooldown = self.fire_rate
 
     def move_spaceship(self):
         """Move player spaceship"""
