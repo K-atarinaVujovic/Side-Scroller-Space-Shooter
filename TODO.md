@@ -1,2 +1,3 @@
 - Remove diagonal movement?
-- Change sizes or speeds?
+- Change sizes or speeds? Speed up player?
+- Make bullets longer
