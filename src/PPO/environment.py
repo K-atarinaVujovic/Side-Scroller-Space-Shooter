@@ -2,6 +2,7 @@ import gymnasium as gym
 import numpy as np
 from typing import Optional
 import pygame
+import sys
 from side_scroller_space_shooter.game import Game
 
 MAX_ENEMIES = 4
@@ -51,7 +52,12 @@ class Environment(gym.Env):
     def render(self, mode="human"):
         """Render the environment"""
         if mode == "human":
-            self.game.draw()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            self.game.draw_game()
+            pygame.display.update()
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         """Start a new episode"""
@@ -90,6 +96,8 @@ class Environment(gym.Env):
         observation = self._get_obs()
         info = self._get_info()
 
+        self.render()
+
         return observation, reward, terminated, truncated, info
 
 
@@ -109,14 +117,10 @@ class Environment(gym.Env):
         min_bullet_to_enemy_distance = self._get_min_bullet_to_enemy_distance()
         normalized_distance = self._normalize(min_bullet_to_enemy_distance, 'x')
         reward += 1 / (1 + normalized_distance)
-        
-        # Discourage standing still
-        if np.array_equal(action, self.no_action):
-            reward -= 0.05
 
         # Punish for losing
         if self.game.game_over:
-            reward -= 1.0
+            reward -= 5.0
 
         return reward
 

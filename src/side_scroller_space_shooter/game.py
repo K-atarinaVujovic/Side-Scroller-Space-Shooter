@@ -80,7 +80,7 @@ class Game:
                 self.draw.draw_game_over()
 
             else:
-                self.draw()
+                self.draw_game()
 
             pygame.display.update()
 
@@ -107,7 +107,7 @@ class Game:
 
 
  
-    def draw(self):
+    def draw_game(self):
         # Draw
         self.draw.draw()
 
