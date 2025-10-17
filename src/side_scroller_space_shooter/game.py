@@ -46,6 +46,8 @@ class Game:
 
         # Game stats
         self.score = 0
+        # Used for rewards in RL
+        self.shot_enemy = False
 
         # Initialize managers
         self.sprites = SpriteManager(self)
@@ -92,7 +94,7 @@ class Game:
         self._update_spawn_cooldowns()
 
         # Check for collisions
-        self.collision.check_collisions()
+        self.shot_enemy = self.collision.check_collisions()
 
         # Handle input
         self.player_sprite.handle_input(keys)
@@ -102,6 +104,8 @@ class Game:
 
         # Update sprites    
         self.sprites.update()
+
+
  
     def draw_next_frame(self):
         # Draw
@@ -119,7 +123,6 @@ class Game:
         self.asteroid_sprites.empty()
         self.enemy_bullets.empty()
         self.enemy_sprites.empty()
-
 
     def _update_spawn_cooldowns(self):
         """Update spawn cooldowns"""
