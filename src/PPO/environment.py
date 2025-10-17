@@ -1,8 +1,8 @@
-from side_scroller_space_shooter.game import Game
 import gymnasium as gym
 import numpy as np
 from typing import Optional
 import pygame
+from side_scroller_space_shooter.game import Game
 
 MAX_ENEMIES = 4
 MAX_ASTEROIDS = 4
@@ -13,6 +13,7 @@ MAX_STEPS = 2000
 class Environment(gym.Env):
     """Gym environment"""
     def __init__(self):
+        metadata = {"render_modes": ["human"]}
         self.game = Game()
         self.screen_width = self.game.settings.screen_width
         self.screen_height = self.game.settings.screen_height
@@ -22,11 +23,11 @@ class Environment(gym.Env):
         self.action_space = gym.spaces.MultiBinary(5)
 
         # Initialize observation space
-        self._agent_location = np.array([-1.0, -1.0], dtype=np.float32)
-        self._agent_bullets = np.full((MAX_AGENT_BULLETS, 2), -1.0, dtype=np.float32)
-        self._asteroid_locations = np.full((MAX_ASTEROIDS, 2), -1.0, dtype=np.float32)
-        self._enemy_locations = np.full((MAX_ENEMIES, 2), -1.0, dtype=np.float32)
-        self._enemy_bullets = np.full((MAX_ENEMY_BULLETS, 2), -1.0, dtype=np.float32)
+        self._agent_location = np.array([0.0, 0.0], dtype=np.float32)
+        self._agent_bullets = np.full((MAX_AGENT_BULLETS, 2), 0.0, dtype=np.float32)
+        self._asteroid_locations = np.full((MAX_ASTEROIDS, 2), 0.0, dtype=np.float32)
+        self._enemy_locations = np.full((MAX_ENEMIES, 2), 0.0, dtype=np.float32)
+        self._enemy_bullets = np.full((MAX_ENEMY_BULLETS, 2), 0.0, dtype=np.float32)
 
         self.observation_space = gym.spaces.Dict(
             {
@@ -46,6 +47,11 @@ class Environment(gym.Env):
         self.step_count = 0
         self.previous_action = np.zeros(5, dtype=int)
         self.no_action = np.zeros(5, dtype=int)
+
+    def render(self, mode="human"):
+        """Render the environment"""
+        if mode == "human":
+            self.game.draw()
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         """Start a new episode"""
@@ -125,11 +131,21 @@ class Environment(gym.Env):
 
     def _update_obs(self):
         """Update observation space variables from game info"""
-        self._agent_location = np.array([self._normalize(self.game.player_sprite.centerx, 'x'), self._normalize(self.game.player_sprite.centery, 'y')], dtype=np.float32)
-        self._agent_bullets = np.array([[self._normalize(b.rect.centerx, 'x'), self._normalize(b.rect.centery, 'y')] for b in self.game.player_bullets], dtype=np.float32)
-        self._enemy_locations = np.array([[self._normalize(e.rect.centerx, 'x'),self._normalize(e.rect.centery, 'y')] for e in self.game.enemy_sprites], dtype=np.float32)
-        self._enemy_bullets = np.array([[self._normalize(b.rect.centerx, 'x'), self._normalize(b.rect.centery, 'y')] for b in self.game.enemy_bullets], dtype=np.float32)
-        self._asteroid_locations = np.array([[self._normalize(a.rect.centerx, 'x'), self._normalize(a.rect.centery, 'y')] for a in self.game.asteroid_sprites], dtype=np.float32)
+        self._agent_location = np.array([self._normalize(self.game.player_sprite.rect.centerx, 'x'), self._normalize(self.game.player_sprite.rect.centery, 'y')], dtype=np.float32)
+        
+        # Helper function
+        def fill_array(sprites, max_len, default=0.0):
+            """Fill array with sprite coordinates, and fill with default values up to max array size"""
+            arr = np.full((max_len, 2), default, dtype=np.float32)
+            for i, sprite in enumerate(sprites[:max_len]):
+                arr[i, 0] = self._normalize(sprite.rect.centerx, 'x')
+                arr[i, 1] = self._normalize(sprite.rect.centery, 'y')
+            return arr
+
+        self._agent_bullets = fill_array(list(self.game.player_bullets), MAX_AGENT_BULLETS)
+        self._enemy_locations = fill_array(list(self.game.enemy_sprites), MAX_ENEMIES)
+        self._enemy_bullets = fill_array(list(self.game.enemy_bullets), MAX_ENEMY_BULLETS)
+        self._asteroid_locations = fill_array(list(self.game.asteroid_sprites), MAX_ASTEROIDS)
 
     def _get_min_bullet_to_enemy_distance(self):
         """Calculate smallest distance between player bullets and an enemy"""
