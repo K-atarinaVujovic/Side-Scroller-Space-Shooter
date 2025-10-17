@@ -48,11 +48,13 @@ class Environment(gym.Env):
         self.step_count = 0
         self.no_action = np.zeros(5, dtype=int)
 
-        # For render
+        # For render and info logging
         self.episode_reward = 0
         self.episode = 0
         self.total_reward = 0
         self.dont_draw = dont_draw
+        self.episode_steps = 0
+        self.total_steps = 0
 
     def render(self, mode="human"):
         """Render the environment"""
@@ -83,6 +85,7 @@ class Environment(gym.Env):
     def step(self, action):
         """Execute one timestep within the environment"""
         self.step_count += 1
+        self.total_steps += 1
 
         keys = self._action_to_keys(action)
 
@@ -113,9 +116,14 @@ class Environment(gym.Env):
 
     def _draw_info(self):
         info_font = pygame.font.SysFont("Arial", 15)
-        text = f"Episode: {self.episode}  Rew: {self.episode_reward:.3f}  Total: {self.total_reward:.3f}"
+        # Write current episode info
+        text = f"Ep: {self.episode}    Rew: {self.episode_reward:10.3f}    Steps: {self.step_count:6}"
         x, y = self.game.settings.screen_width - 8, 8
         self.game.draw.draw_text(text, x, y, topright=True, font=info_font)
+        # Write total info
+        text = f"Total rew: {self.total_reward:20.3f}    Total steps: {self.total_steps:10}"
+        x, y = self.game.settings.screen_width - 8, self.game.settings.screen_height - 8
+        self.game.draw.draw_text(text, x, y, bottomright=True, font=info_font)
 
     def _calculate_reward(self, action):
         """Calculate reward.
