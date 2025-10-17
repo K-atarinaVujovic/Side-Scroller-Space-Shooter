@@ -13,7 +13,7 @@ MAX_STEPS = 2000
 
 class Environment(gym.Env):
     """Gym environment"""
-    def __init__(self):
+    def __init__(self, dont_draw):
         metadata = {"render_modes": ["human"]}
         self.game = Game()
         self.screen_width = self.game.settings.screen_width
@@ -24,30 +24,35 @@ class Environment(gym.Env):
         self.action_space = gym.spaces.MultiBinary(5)
 
         # Initialize observation space
-        self._agent_location = np.array([0.0, 0.0], dtype=np.float32)
-        self._agent_bullets = np.full((MAX_AGENT_BULLETS, 2), 0.0, dtype=np.float32)
-        self._asteroid_locations = np.full((MAX_ASTEROIDS, 2), 0.0, dtype=np.float32)
-        self._enemy_locations = np.full((MAX_ENEMIES, 2), 0.0, dtype=np.float32)
-        self._enemy_bullets = np.full((MAX_ENEMY_BULLETS, 2), 0.0, dtype=np.float32)
+        self._agent_location = np.array([-1.0, -1.0], dtype=np.float32)
+        self._agent_bullets = np.full((MAX_AGENT_BULLETS, 2), -1.0, dtype=np.float32)
+        self._asteroid_locations = np.full((MAX_ASTEROIDS, 2), -1.0, dtype=np.float32)
+        self._enemy_locations = np.full((MAX_ENEMIES, 2), -1.0, dtype=np.float32)
+        self._enemy_bullets = np.full((MAX_ENEMY_BULLETS, 2), -1.0, dtype=np.float32)
 
         self.observation_space = gym.spaces.Dict(
             {
                 # Agent: centerx, centery
-                "agent": gym.spaces.Box(low=0, high=1, shape=(2,)),
+                "agent": gym.spaces.Box(low=-1, high=1, shape=(2,)),
                 # Agent bullets: centerx, centery
-                "agent_bullets": gym.spaces.Box(low=0, high=1, shape=(MAX_AGENT_BULLETS, 2)),
+                "agent_bullets": gym.spaces.Box(low=-1, high=1, shape=(MAX_AGENT_BULLETS, 2)),
                 # Asteroid: centerx, centery
-                "asteroids": gym.spaces.Box(low=0, high=1, shape=(MAX_ASTEROIDS, 2)),
+                "asteroids": gym.spaces.Box(low=-1, high=1, shape=(MAX_ASTEROIDS, 2)),
                 # Enemy: centerx, centery
-                "enemies": gym.spaces.Box(low=0, high=1, shape=(MAX_ENEMIES, 2)),
+                "enemies": gym.spaces.Box(low=-1, high=1, shape=(MAX_ENEMIES, 2)),
                 # Enemy bullets: centerx, centery
-                "enemy_bullets": gym.spaces.Box(low=0, high=1, shape=(MAX_ENEMY_BULLETS, 2))
+                "enemy_bullets": gym.spaces.Box(low=-1, high=1, shape=(MAX_ENEMY_BULLETS, 2))
             }
         )
 
         self.step_count = 0
-        self.previous_action = np.zeros(5, dtype=int)
         self.no_action = np.zeros(5, dtype=int)
+
+        # For render
+        self.episode_reward = 0
+        self.episode = 0
+        self.total_reward = 0
+        self.dont_draw = dont_draw
 
     def render(self, mode="human"):
         """Render the environment"""
@@ -57,11 +62,15 @@ class Environment(gym.Env):
                     pygame.quit()
                     sys.exit()
             self.game.draw_game()
+            self._draw_info()
             pygame.display.update()
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         """Start a new episode"""
         super().reset(seed=seed)
+
+        self.episode += 1
+        self.episode_reward = 0
 
         self.game.reset()
         self.step_count = 0
@@ -90,17 +99,23 @@ class Environment(gym.Env):
 
         # Calculate reward
         reward = self._calculate_reward(action)
-        
-        self.previous_action = action
+        # For render
+        self.episode_reward += reward
+        self.total_reward += reward
 
         observation = self._get_obs()
         info = self._get_info()
 
-        self.render()
+        if not self.dont_draw:
+            self.render()
 
         return observation, reward, terminated, truncated, info
 
-
+    def _draw_info(self):
+        info_font = pygame.font.SysFont("Arial", 15)
+        text = f"Episode: {self.episode}  Rew: {self.episode_reward:.3f}  Total: {self.total_reward:.3f}"
+        x, y = self.game.settings.screen_width - 8, 8
+        self.game.draw.draw_text(text, x, y, topright=True, font=info_font)
 
     def _calculate_reward(self, action):
         """Calculate reward.
@@ -111,16 +126,17 @@ class Environment(gym.Env):
         reward = 0
         # Reward for shooting enemy
         if self.game.shot_enemy:
-            reward += 1.0
+            reward += 500.0
 
         # Reward for bullet close to enemy
-        min_bullet_to_enemy_distance = self._get_min_bullet_to_enemy_distance()
-        normalized_distance = self._normalize(min_bullet_to_enemy_distance, 'x')
-        reward += 1 / (1 + normalized_distance)
+        if self.game.enemy_sprites:
+            min_bullet_to_enemy_distance = self._get_min_bullet_to_enemy_distance()
+            normalized_distance = self._normalize(min_bullet_to_enemy_distance, 'x')
+            reward += 0.05 / (1 + normalized_distance)**2
 
         # Punish for losing
         if self.game.game_over:
-            reward -= 5.0
+            reward -= 700.0
 
         return reward
 
@@ -138,7 +154,7 @@ class Environment(gym.Env):
         self._agent_location = np.array([self._normalize(self.game.player_sprite.rect.centerx, 'x'), self._normalize(self.game.player_sprite.rect.centery, 'y')], dtype=np.float32)
         
         # Helper function
-        def fill_array(sprites, max_len, default=0.0):
+        def fill_array(sprites, max_len, default=-1.0):
             """Fill array with sprite coordinates, and fill with default values up to max array size"""
             arr = np.full((max_len, 2), default, dtype=np.float32)
             for i, sprite in enumerate(sprites[:max_len]):

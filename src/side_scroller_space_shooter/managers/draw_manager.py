@@ -38,7 +38,7 @@ class DrawManager:
         self._draw_sprites()
         self.draw_score(margin, margin)
 
-    def draw_text(self, text, x, y, center = False, bg_color = None, font = None, text_color = None):
+    def draw_text(self, text, x, y, center = False, topright = False, bg_color = None, font = None, text_color = None):
         """Draw text on screen
         
         If font and text_color aren't provided, their default settings are chosen.
@@ -54,8 +54,11 @@ class DrawManager:
         # Center
         if center:
             img_rect.center = (x, y)
+        elif topright:
+            img_rect.topright = (x, y)
         else:
             img_rect.x, img_rect.y = (x, y)
+
 
         self.screen.blit(img, img_rect)
 
