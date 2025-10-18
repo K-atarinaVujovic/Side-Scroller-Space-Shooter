@@ -8,6 +8,7 @@ def get_train_args():
     parser.add_argument("-r", "--runs", type=int, default=1)
     parser.add_argument("-m", "--model", type=str, default="")
     parser.add_argument("-dd", "--dont-draw", action="store_true")
+    parser.add_argument("-v", "--version", type=str, default="")
 
     args = parser.parse_args()
 

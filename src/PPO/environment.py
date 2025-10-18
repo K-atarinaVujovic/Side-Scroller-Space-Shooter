@@ -13,7 +13,7 @@ MAX_STEPS = 2000
 
 class Environment(gym.Env):
     """Gym environment"""
-    def __init__(self, dont_draw):
+    def __init__(self, version = "", dont_draw = False):
         metadata = {"render_modes": ["human"]}
         self.game = Game()
         self.screen_width = self.game.settings.screen_width
@@ -55,6 +55,9 @@ class Environment(gym.Env):
         self.dont_draw = dont_draw
         self.episode_steps = 0
         self.total_steps = 0
+
+        # For picking a reward system
+        self.version = version
 
     def render(self, mode="human"):
         """Render the environment"""
@@ -132,19 +135,38 @@ class Environment(gym.Env):
         Punishes for standing still and losing the game.
         """
         reward = 0
+        
         # Reward for shooting enemy
         if self.game.shot_enemy:
-            reward += 500.0
+            reward += 550.0
 
         # Reward for bullet close to enemy
-        if self.game.enemy_sprites:
+        if self.game.enemy_bullets:
             min_bullet_to_enemy_distance = self._get_min_bullet_to_enemy_distance()
-            normalized_distance = self._normalize(min_bullet_to_enemy_distance, 'x')
-            reward += 0.05 / (1 + normalized_distance)**2
+            normalized_distance = self._normalize(min_bullet_to_enemy_distance, 'd')
+            reward += 1.6 / (1 + normalized_distance)**2
 
         # Punish for losing
         if self.game.game_over:
-            reward -= 700.0
+            reward -= 400.0
+
+        # Punish for being close to enemy
+        if self.game.enemy_sprites:
+            min_distance = self._get_player_to_group_distance(self.game.enemy_sprites)
+            normalized_distance = self._normalize(min_distance, 'd')
+            reward -= 0.5 / (1 + normalized_distance)**2
+
+        # Punish for being close to asteroid
+        if self.game.asteroid_sprites:
+            min_distance = self._get_player_to_group_distance(self.game.asteroid_sprites)
+            normalized_distance = self._normalize(min_distance, 'd')
+            reward -= 1.2 / (1 + normalized_distance)**2
+
+        # Punsh for being close to bullet
+        if self.game.enemy_bullets:
+            min_distance = self._get_player_to_group_distance(self.game.enemy_bullets)
+            normalized_distance = self._normalize(min_distance, 'd')
+            reward -= 1 / (1 + normalized_distance)**2
 
         return reward
 
@@ -154,6 +176,9 @@ class Environment(gym.Env):
             return value / self.screen_width
         elif axis=='y':
             return value / self.screen_height
+        elif axis=="d":
+            max_distance = (self.screen_width**2 + self.screen_height**2)**0.5
+            return value / max_distance
         else:
             return None
 
@@ -194,6 +219,31 @@ class Environment(gym.Env):
                 distance = (dx**2 + dy**2)**0.5
 
                 if distance < min_distance:
+                    min_distance = distance
+
+        return min_distance
+    
+    def _get_player_to_group_distance(self, group):
+        """Calculate smallest distance between player and group"""
+        player = self.game.player_sprite
+
+        # Initialize min distance
+        min_distance = self.screen_width
+
+        # If no bullets are shot or no group are on screen, return max distance
+        if not group:
+            return min_distance
+
+        for sprite in group:
+            dx = player.rect.centerx - sprite.rect.centerx
+            dy = player.rect.centery - sprite.rect.centery
+            distance = (dx**2 + dy**2)**0.5
+
+            if distance < min_distance:
+                # If sprite is behind player, ignore
+                if sprite.rect.centerx <= player.rect.centerx - 30:
+                    continue
+                else:
                     min_distance = distance
 
         return min_distance
