@@ -2,13 +2,13 @@ import pygame
 import math
 import sys
 
-from settings import GameSettings, PlayerSettings, AsteroidSettings, EnemySettings
-from sprites.spaceship import PlayerSpaceship
-from sprites.bullet import PlayerBullet
-from sprites.asteroid import Asteroid
-from managers.sprite_manager import SpriteManager
-from managers.draw_manager import DrawManager
-from managers.collision_manager import CollisionManager
+from side_scroller_space_shooter.settings import GameSettings, PlayerSettings, AsteroidSettings, EnemySettings
+from side_scroller_space_shooter.sprites.spaceship import PlayerSpaceship
+from side_scroller_space_shooter.sprites.bullet import PlayerBullet
+from side_scroller_space_shooter.sprites.asteroid import Asteroid
+from side_scroller_space_shooter.managers.sprite_manager import SpriteManager
+from side_scroller_space_shooter.managers.draw_manager import DrawManager
+from side_scroller_space_shooter.managers.collision_manager import CollisionManager
 
 class Game:
     """Class that runs the game"""
@@ -46,6 +46,8 @@ class Game:
 
         # Game stats
         self.score = 0
+        # Used for rewards in RL
+        self.shot_enemy = False
 
         # Initialize managers
         self.sprites = SpriteManager(self)
@@ -77,6 +79,9 @@ class Game:
             if self.game_over:
                 self.draw.draw_game_over()
 
+            else:
+                self.draw_game()
+
             pygame.display.update()
 
 
@@ -89,7 +94,7 @@ class Game:
         self._update_spawn_cooldowns()
 
         # Check for collisions
-        self.collision.check_collisions()
+        self.shot_enemy = self.collision.check_collisions()
 
         # Handle input
         self.player_sprite.handle_input(keys)
@@ -100,9 +105,12 @@ class Game:
         # Update sprites    
         self.sprites.update()
 
+
+ 
+    def draw_game(self):
         # Draw
-        self.draw.draw()     
-  
+        self.draw.draw()
+
     def reset(self):
         """Reset game"""
         self.player_sprite.reset()
@@ -115,7 +123,6 @@ class Game:
         self.asteroid_sprites.empty()
         self.enemy_bullets.empty()
         self.enemy_sprites.empty()
-
 
     def _update_spawn_cooldowns(self):
         """Update spawn cooldowns"""

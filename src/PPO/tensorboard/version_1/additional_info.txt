@@ -1,0 +1,3 @@
+Reward for shooting enemy: 500
+Reward for shooting close to enemy: 0.05 / (1 + normalized_distance)**2
+Punishment for losing: -700

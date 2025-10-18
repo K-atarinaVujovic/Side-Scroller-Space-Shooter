@@ -1,7 +1,7 @@
 import pygame
-from sprites.bullet import PlayerBullet, EnemyBullet
-from sprites.asteroid import Asteroid
-from sprites.spaceship import EnemySpaceship
+from side_scroller_space_shooter.sprites.bullet import PlayerBullet, EnemyBullet
+from side_scroller_space_shooter.sprites.asteroid import Asteroid
+from side_scroller_space_shooter.sprites.spaceship import EnemySpaceship
 
 # import os
 # import sys

@@ -32,13 +32,15 @@ class CollisionManager:
         # Check if player shot an enemy and remove the bullet
         shot_enemy = self._check_group_to_group_collision(self.player_bullets, self.enemy_sprites)
 
-        
+
         if has_player_collided_asteroid or has_player_collided_enemy or has_player_collided_bullet:
             self.game.game_over = True
 
         if shot_enemy:
             self.enemy_sprites.remove(shot_enemy)
             self.game.score += 5
+
+        return shot_enemy
     
     def _check_player_to_group_collision(self, group):
         """Check if player collided with a sprite from the group"""

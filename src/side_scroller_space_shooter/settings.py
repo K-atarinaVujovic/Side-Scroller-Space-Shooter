@@ -9,7 +9,7 @@ class GameSettings:
         # Screen
         self.screen_width = 500
         self.screen_height = 360
-        self.bg_image = "assets/background.png"
+        self.bg_image = "side_scroller_space_shooter/assets/background.png"
         self.scroll_speed = 1
 
         # Text
@@ -22,7 +22,7 @@ class GameSettings:
 class PlayerSettings:
     """Player settings"""
     def __init__(self):
-        self.sprite_img = "assets/ship.png"
+        self.sprite_img = "side_scroller_space_shooter/assets/ship.png"
         self.speed = 6
 
         self.bullet_speed = 5
@@ -34,7 +34,7 @@ class EnemySettings:
     """Enemy settings"""
 
     def __init__(self):
-        self.sprite_img = "assets/enemy.png"
+        self.sprite_img = "side_scroller_space_shooter/assets/enemy.png"
         self.speed = 2
 
         self.bullet_speed = 5
@@ -53,6 +53,6 @@ class EnemySettings:
 class AsteroidSettings:
     """Asteroid settings"""
     def __init__(self):
-        self.sprite_img = "assets/asteroid.png"
+        self.sprite_img = "side_scroller_space_shooter/assets/asteroid.png"
         self.speed = 2
         self.spawn_cooldown = 1500
