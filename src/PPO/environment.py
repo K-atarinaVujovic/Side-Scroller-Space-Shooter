@@ -4,6 +4,9 @@ from typing import Optional
 import pygame
 import sys
 from side_scroller_space_shooter.game import Game
+from PPO.helpers.draw_helper import DrawHelper
+from PPO.helpers.obs_space_helper import ObsSpaceHelper
+from PPO.helpers.reward_helper import RewardHelper
 
 MAX_ENEMIES = 4
 MAX_ASTEROIDS = 4
@@ -58,6 +61,12 @@ class Environment(gym.Env):
 
         # For picking a reward system
         self.version = version
+        
+        # Initialize helpers
+        self.draw_helper = DrawHelper(self.game)
+        self.reward_helper = RewardHelper(self.game)
+        self.obs_space_helper = ObsSpaceHelper(self.game, MAX_AGENT_BULLETS, MAX_ENEMIES, MAX_ENEMY_BULLETS, MAX_ASTEROIDS)
+
 
     def render(self, mode="human"):
         """Render the environment"""
@@ -67,7 +76,7 @@ class Environment(gym.Env):
                     pygame.quit()
                     sys.exit()
             self.game.draw_game()
-            self._draw_info()
+            self.draw_helper.draw_info(self.episode, self.episode_reward, self.step_count, self.total_reward, self.total_steps)
             pygame.display.update()
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
@@ -95,7 +104,7 @@ class Environment(gym.Env):
         self.game.update_game_state(keys)
 
         # Update observation variables
-        self._update_obs()
+        self.obs_space_helper.update_obs()
 
         # Terminate episode if agent died
         terminated = self.game.game_over
@@ -104,7 +113,7 @@ class Environment(gym.Env):
         truncated = self.step_count >= MAX_STEPS
 
         # Calculate reward
-        reward = self._calculate_reward(action)
+        reward = self.reward_helper.calculate_reward()
         # For render
         self.episode_reward += reward
         self.total_reward += reward
@@ -117,141 +126,6 @@ class Environment(gym.Env):
 
         return observation, reward, terminated, truncated, info
 
-    def _draw_info(self):
-        info_font = pygame.font.SysFont("Arial", 15)
-        # Write current episode info
-        text = f"Ep: {self.episode}    Rew: {self.episode_reward:10.3f}    Steps: {self.step_count:6}"
-        x, y = self.game.settings.screen_width - 8, 8
-        self.game.draw.draw_text(text, x, y, topright=True, font=info_font)
-        # Write total info
-        text = f"Total rew: {self.total_reward:20.3f}    Total steps: {self.total_steps:10}"
-        x, y = self.game.settings.screen_width - 8, self.game.settings.screen_height - 8
-        self.game.draw.draw_text(text, x, y, bottomright=True, font=info_font)
-
-    def _calculate_reward(self, action):
-        """Calculate reward.
-        
-        Rewards for shooting enemies and shooting close to enemies.
-        Punishes for standing still and losing the game.
-        """
-        reward = 0
-        
-        # Reward for shooting enemy
-        if self.game.shot_enemy:
-            reward += 550.0
-
-        # Reward for bullet close to enemy
-        if self.game.enemy_bullets:
-            min_bullet_to_enemy_distance = self._get_min_bullet_to_enemy_distance()
-            normalized_distance = self._normalize(min_bullet_to_enemy_distance, 'd')
-            reward += 1.6 / (1 + normalized_distance)**2
-
-        # Punish for losing
-        if self.game.game_over:
-            reward -= 400.0
-
-        # Punish for being close to enemy
-        if self.game.enemy_sprites:
-            min_distance = self._get_player_to_group_distance(self.game.enemy_sprites)
-            normalized_distance = self._normalize(min_distance, 'd')
-            reward -= 0.5 / (1 + normalized_distance)**2
-
-        # Punish for being close to asteroid
-        if self.game.asteroid_sprites:
-            min_distance = self._get_player_to_group_distance(self.game.asteroid_sprites)
-            normalized_distance = self._normalize(min_distance, 'd')
-            reward -= 1.2 / (1 + normalized_distance)**2
-
-        # Punsh for being close to bullet
-        if self.game.enemy_bullets:
-            min_distance = self._get_player_to_group_distance(self.game.enemy_bullets)
-            normalized_distance = self._normalize(min_distance, 'd')
-            reward -= 1 / (1 + normalized_distance)**2
-
-        return reward
-
-    def _normalize(self, value, axis):
-        """Return normalized value"""
-        if axis=='x':
-            return value / self.screen_width
-        elif axis=='y':
-            return value / self.screen_height
-        elif axis=="d":
-            max_distance = (self.screen_width**2 + self.screen_height**2)**0.5
-            return value / max_distance
-        else:
-            return None
-
-    def _update_obs(self):
-        """Update observation space variables from game info"""
-        self._agent_location = np.array([self._normalize(self.game.player_sprite.rect.centerx, 'x'), self._normalize(self.game.player_sprite.rect.centery, 'y')], dtype=np.float32)
-        
-        # Helper function
-        def fill_array(sprites, max_len, default=-1.0):
-            """Fill array with sprite coordinates, and fill with default values up to max array size"""
-            arr = np.full((max_len, 2), default, dtype=np.float32)
-            for i, sprite in enumerate(sprites[:max_len]):
-                arr[i, 0] = self._normalize(sprite.rect.centerx, 'x')
-                arr[i, 1] = self._normalize(sprite.rect.centery, 'y')
-            return arr
-
-        self._agent_bullets = fill_array(list(self.game.player_bullets), MAX_AGENT_BULLETS)
-        self._enemy_locations = fill_array(list(self.game.enemy_sprites), MAX_ENEMIES)
-        self._enemy_bullets = fill_array(list(self.game.enemy_bullets), MAX_ENEMY_BULLETS)
-        self._asteroid_locations = fill_array(list(self.game.asteroid_sprites), MAX_ASTEROIDS)
-
-    def _get_min_bullet_to_enemy_distance(self):
-        """Calculate smallest distance between player bullets and an enemy"""
-        bullets = self.game.player_bullets
-        enemies = self.game.enemy_sprites
-
-        # Initialize min distance
-        min_distance = self.screen_width
-
-        # If no bullets are shot or no enemies are on screen, return max distance
-        if not bullets or not enemies:
-            return min_distance
-
-        for bullet in bullets:
-            for enemy in enemies:
-                dx = bullet.rect.centerx - enemy.rect.centerx
-                dy = bullet.rect.centery - enemy.rect.centery
-                distance = (dx**2 + dy**2)**0.5
-
-                if distance < min_distance:
-                    min_distance = distance
-
-        return min_distance
-    
-    def _get_player_to_group_distance(self, group):
-        """Calculate smallest distance between player and group"""
-        player = self.game.player_sprite
-
-        # Initialize min distance
-        min_distance = self.screen_width
-
-        # If no bullets are shot or no group are on screen, return max distance
-        if not group:
-            return min_distance
-
-        for sprite in group:
-            dx = player.rect.centerx - sprite.rect.centerx
-            dy = player.rect.centery - sprite.rect.centery
-            distance = (dx**2 + dy**2)**0.5
-
-            if distance < min_distance:
-                # If sprite is behind player, ignore
-                if sprite.rect.centerx <= player.rect.centerx - 30:
-                    continue
-                else:
-                    min_distance = distance
-
-        return min_distance
-
-    def _get_info(self):
-        """Get info, NOT IMPLEMENTED"""
-        return {}
-
     def _get_obs(self):
         """Convert internal state to observation format.
 
@@ -263,6 +137,10 @@ class Environment(gym.Env):
                 "asteroids": self._asteroid_locations,
                 "enemies": self._enemy_locations,
                 "enemy_bullets": self._enemy_bullets}
+
+    def _get_info(self):
+        """Get info, NOT IMPLEMENTED"""
+        return {} 
 
     def _action_to_keys(self, action):
         """Convert MultiBinary action to pygame key state dict"""

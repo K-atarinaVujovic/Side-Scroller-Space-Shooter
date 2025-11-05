@@ -4,8 +4,6 @@ import sys
 
 from side_scroller_space_shooter.settings import GameSettings, PlayerSettings, AsteroidSettings, EnemySettings
 from side_scroller_space_shooter.sprites.spaceship import PlayerSpaceship
-from side_scroller_space_shooter.sprites.bullet import PlayerBullet
-from side_scroller_space_shooter.sprites.asteroid import Asteroid
 from side_scroller_space_shooter.managers.sprite_manager import SpriteManager
 from side_scroller_space_shooter.managers.draw_manager import DrawManager
 from side_scroller_space_shooter.managers.collision_manager import CollisionManager

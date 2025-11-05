@@ -7,6 +7,7 @@ from PPO.arguments import get_play_args
 MODELS_PATH = "PPO/models/"
 
 def play(args):
+    """Watch model play the game"""
     model_path = _parse_args(args)
 
     env = Monitor(Environment())
@@ -25,10 +26,10 @@ def play(args):
         obs, rewards, terminated, truncated, info = env.step(action)
         if terminated or truncated:
             obs, _ = env.reset()
-        # env.render()
     
 
 def _parse_args(args):
+    """Parse user arguments"""
     if args.model == "":
         model_path = MODELS_PATH + "PPO_model"
     else:
