@@ -5,21 +5,21 @@ from gymnasium.utils.env_checker import check_env
 from PPO.arguments import get_train_args
 import time
 import os
-from PPO.utils.logging_utils import get_reward_info, play_sound
+from PPO.utils.logging_utils import play_sound
 
 MODELS_PATH = "PPO/models/"
 TENSORBOARD_PATH = "PPO/tensorboard/"
 
 def train(args):
     """Train model"""
-    timesteps, model_path, model_name, runs, dont_draw, v = _parse_args(args)
+    timesteps, model_path, model_name, dont_draw = _parse_args(args)
 
     log_path = TENSORBOARD_PATH + model_name + "/"
 
     if(dont_draw):
         os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-    env = Monitor(Environment(v, dont_draw))
+    env = Monitor(Environment(dont_draw))
 
     model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log=log_path)
 
@@ -38,20 +38,13 @@ def train(args):
     elapsed_min = elapsed_sec / 60
     print(f"{timesteps} steps took: {elapsed_min:.2f} minutes")
 
-    # Log additional info
-    info = get_reward_info(v)
-    with open(log_path + "additional_info.txt", "w") as f:
-        f.write(info)
-
     # Training finished, come back!!
     play_sound()
 
 def _parse_args(args):
     """Parse user arguments"""
     timesteps = args.timesteps
-    runs = args.runs
     dont_draw = args.dont_draw
-    v = args.version
 
     if args.model == "":
         model_path = MODELS_PATH + "PPO_model"
@@ -60,7 +53,7 @@ def _parse_args(args):
 
     model_name = args.model
 
-    return timesteps, model_path, model_name, runs, dont_draw, v
+    return timesteps, model_path, model_name, dont_draw
 
 def _check_env(env):
     """Check if environment is compliant with gym requirements"""

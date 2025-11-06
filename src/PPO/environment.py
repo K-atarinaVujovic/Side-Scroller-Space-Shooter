@@ -16,7 +16,7 @@ MAX_STEPS = 2000
 
 class Environment(gym.Env):
     """Gym environment"""
-    def __init__(self, version = "", dont_draw = False):
+    def __init__(self, dont_draw = False):
         metadata = {"render_modes": ["human"]}
         self.game = Game()
         self.screen_width = self.game.settings.screen_width
@@ -58,9 +58,6 @@ class Environment(gym.Env):
         self.dont_draw = dont_draw
         self.episode_steps = 0
         self.total_steps = 0
-
-        # For picking a reward system
-        self.version = version
         
         # Initialize helpers
         self.draw_helper = DrawHelper(self.game)
