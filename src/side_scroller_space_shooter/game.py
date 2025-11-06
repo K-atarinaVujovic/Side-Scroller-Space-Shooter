@@ -1,5 +1,4 @@
 import pygame
-import math
 import sys
 
 from side_scroller_space_shooter.settings import GameSettings, PlayerSettings, AsteroidSettings, EnemySettings
