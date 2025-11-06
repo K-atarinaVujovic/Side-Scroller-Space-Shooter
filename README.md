@@ -43,7 +43,7 @@ pip install -r dependencies.txt
 ## Playing the game
 To play the game yourself, run the following command:
 ```
-python -m side-scroller-space-shooter.main
+python -m side_scroller_space_shooter.main
 ```
 After running the command, a pygame window will open with the game ready to play.
 
